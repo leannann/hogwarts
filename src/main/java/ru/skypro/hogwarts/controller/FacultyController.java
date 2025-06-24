@@ -7,6 +7,8 @@ import ru.skypro.hogwarts.entities.Faculty;
 import ru.skypro.hogwarts.entities.Student;
 import ru.skypro.hogwarts.service.FacultyService;
 
+import java.util.Collection;
+
 @RestController
 @RequestMapping("faculty")
 public class FacultyController {
@@ -24,6 +26,21 @@ public class FacultyController {
         }
         return ResponseEntity.ok(faculty);
     }
+
+    @GetMapping
+    public ResponseEntity<Collection<Faculty>> findFaculties(@RequestParam String name, @RequestParam String colour){
+        return ResponseEntity.ok(facultyService.findByNameOrColourIgnoreCase(name, colour));
+    }
+
+    @GetMapping("/{id}/students")
+    public ResponseEntity<Collection<Student>> getStudentsByFaculty(@PathVariable Long id) {
+        Faculty faculty = facultyService.findFaculty(id);
+        if (faculty == null || faculty.getStudents() == null) {
+            return ResponseEntity.notFound().build();
+        }
+        return ResponseEntity.ok(faculty.getStudents());
+    }
+
     @PostMapping
     public Faculty createFaculty(@RequestBody Faculty faculty) {return facultyService.addFaculty(faculty);}
 

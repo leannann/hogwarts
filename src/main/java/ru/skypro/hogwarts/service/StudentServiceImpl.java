@@ -5,7 +5,9 @@ import org.springframework.stereotype.Service;
 import ru.skypro.hogwarts.entities.Student;
 import ru.skypro.hogwarts.repositories.StudentRepository;
 
+import java.util.Collection;
 import java.util.HashMap;
+import java.util.List;
 
 @Service
 public class StudentServiceImpl implements StudentService {
@@ -32,5 +34,9 @@ public class StudentServiceImpl implements StudentService {
 
     public void deleteStudent(long id){
         studentRepository.deleteById(id);
+    }
+
+    public Collection<Student> findByAgeBetween(int min, int max) {
+        return studentRepository.findByAgeBetween(min, max);
     }
 }
