@@ -5,6 +5,7 @@ import ru.skypro.hogwarts.entities.Faculty;
 import ru.skypro.hogwarts.repositories.FacultyRepository;
 import ru.skypro.hogwarts.repositories.StudentRepository;
 
+import java.util.Collection;
 import java.util.HashMap;
 
 @Service
@@ -34,5 +35,9 @@ public class FacultyServiceImpl implements FacultyService {
     }
     public void deleteFaculty(long id) {
         facultyRepository.deleteById(id);
+    }
+
+    public Collection<Faculty> findByNameOrColourIgnoreCase(String name, String colour){
+        return facultyRepository.findByNameOrColourIgnoreCase(name, colour);
     }
 }

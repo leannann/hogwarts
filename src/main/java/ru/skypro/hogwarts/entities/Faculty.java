@@ -3,7 +3,9 @@ package ru.skypro.hogwarts.entities;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.Id;
+import jakarta.persistence.OneToMany;
 
+import java.util.Collection;
 import java.util.Objects;
 
 @Entity
@@ -13,6 +15,9 @@ public class Faculty {
     private long id;
     private String name;
     private String colour;
+
+    @OneToMany(mappedBy = "faculty")
+    private Collection<Student> students;
 
     public Faculty(){}
 
@@ -44,6 +49,10 @@ public class Faculty {
 
     public void setColour(String colour) {
         this.colour = colour;
+    }
+
+    public Collection<Student> getStudents() {
+        return students;
     }
 
     @Override
