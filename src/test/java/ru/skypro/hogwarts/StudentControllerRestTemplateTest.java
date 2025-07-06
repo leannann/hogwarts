@@ -21,8 +21,20 @@ import static org.assertj.core.api.Assertions.assertThat;
 @SpringBootTest(webEnvironment = WebEnvironment.RANDOM_PORT)
 public class StudentControllerRestTemplateTest {
 
-    private static final String STUDENT_NAME = "Harry";
-    private static final int STUDENT_AGE = 17;
+    private static final String STUDENT_PATH = "/student";
+    private static final String FACULTY_PATH = "/faculty";
+
+    private static final String STUDENT_NAME_HARRY = "Harry";
+    private static final String STUDENT_NAME_HERMIONE = "Hermione";
+    private static final String STUDENT_NAME_RON = "Ron";
+    private static final String STUDENT_NAME_NEVILLE = "Neville";
+    private static final String STUDENT_NAME_DEAN = "Dean";
+    private static final String STUDENT_NAME_SEAMUS = "Seamus";
+
+    private static final int AGE_15 = 15;
+    private static final int AGE_16 = 16;
+    private static final int AGE_17 = 17;
+
     private static final String FACULTY_NAME = "Gryffindor";
     private static final String FACULTY_COLOR = "Red";
 
@@ -49,54 +61,54 @@ public class StudentControllerRestTemplateTest {
 
     @Test
     void testCreateStudent() {
-        Student student = new Student(0, STUDENT_NAME, STUDENT_AGE);
-        ResponseEntity<Student> response = restTemplate.postForEntity(baseUrl + "/student", student, Student.class);
+        Student student = new Student(0, STUDENT_NAME_HARRY, AGE_17);
+        ResponseEntity<Student> response = restTemplate.postForEntity(baseUrl + STUDENT_PATH, student, Student.class);
 
         assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
         assertThat(response.getBody()).isNotNull();
-        assertThat(response.getBody().getName()).isEqualTo(STUDENT_NAME);
+        assertThat(response.getBody().getName()).isEqualTo(STUDENT_NAME_HARRY);
     }
 
     @Test
     void testGetStudentById() {
-        Student student = createStudent("Hermione", 16);
-        ResponseEntity<Student> response = restTemplate.getForEntity(baseUrl + "/student/" + student.getId(), Student.class);
+        Student student = createStudent(STUDENT_NAME_HERMIONE, AGE_16);
+        ResponseEntity<Student> response = restTemplate.getForEntity(baseUrl + STUDENT_PATH + "/" + student.getId(), Student.class);
 
         assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
-        assertThat(Objects.requireNonNull(response.getBody()).getName()).isEqualTo("Hermione");
+        assertThat(Objects.requireNonNull(response.getBody()).getName()).isEqualTo(STUDENT_NAME_HERMIONE);
     }
 
     @Test
     void testEditStudent() {
-        Student student = createStudent("Ron", 15);
-        student.setAge(16);
+        Student student = createStudent(STUDENT_NAME_RON, AGE_15);
+        student.setAge(AGE_16);
         HttpEntity<Student> request = new HttpEntity<>(student);
 
         ResponseEntity<Student> response = restTemplate.exchange(
-                baseUrl + "/student/" + student.getId(), HttpMethod.PUT, request, Student.class);
+                baseUrl + STUDENT_PATH + "/" + student.getId(), HttpMethod.PUT, request, Student.class);
 
         assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
-        assertThat(Objects.requireNonNull(response.getBody()).getAge()).isEqualTo(16);
+        assertThat(Objects.requireNonNull(response.getBody()).getAge()).isEqualTo(AGE_16);
     }
 
     @Test
     void testDeleteStudent() {
-        Student student = createStudent("Neville", 17);
-        restTemplate.delete(baseUrl + "/student/" + student.getId());
+        Student student = createStudent(STUDENT_NAME_NEVILLE, AGE_17);
+        restTemplate.delete(baseUrl + STUDENT_PATH + "/" + student.getId());
 
         ResponseEntity<Student> response = restTemplate.getForEntity(
-                baseUrl + "/student/" + student.getId(), Student.class);
+                baseUrl + STUDENT_PATH + "/" + student.getId(), Student.class);
 
         assertThat(response.getStatusCode()).isEqualTo(HttpStatus.NOT_FOUND);
     }
 
     @Test
     void testFindStudentsByAgeRange() {
-        createStudent("Dean", 15);
-        createStudent("Seamus", 17);
+        createStudent(STUDENT_NAME_DEAN, AGE_15);
+        createStudent(STUDENT_NAME_SEAMUS, AGE_17);
 
         ResponseEntity<Student[]> response = restTemplate.getForEntity(
-                baseUrl + "/student?min=15&max=17", Student[].class);
+                baseUrl + STUDENT_PATH + "?min=15&max=17", Student[].class);
 
         assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
         assertThat(Objects.requireNonNull(response.getBody()).length).isGreaterThanOrEqualTo(2);
@@ -106,13 +118,13 @@ public class StudentControllerRestTemplateTest {
     void testGetStudentFaculty() {
         Faculty faculty = createFaculty(FACULTY_NAME, FACULTY_COLOR);
 
-        Student student = new Student(0, STUDENT_NAME, STUDENT_AGE);
+        Student student = new Student(0, STUDENT_NAME_HARRY, AGE_17);
         student.setFaculty(faculty);
 
-        student = restTemplate.postForObject(baseUrl + "/student", student, Student.class);
+        student = restTemplate.postForObject(baseUrl + STUDENT_PATH, student, Student.class);
 
         ResponseEntity<Faculty> response = restTemplate.getForEntity(
-                baseUrl + "/student/" + student.getId() + "/faculty", Faculty.class);
+                baseUrl + STUDENT_PATH + "/" + student.getId() + FACULTY_PATH, Faculty.class);
 
         assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
         assertThat(Objects.requireNonNull(response.getBody()).getName()).isEqualTo(FACULTY_NAME);
@@ -120,11 +132,11 @@ public class StudentControllerRestTemplateTest {
 
     private Student createStudent(String name, int age) {
         Student student = new Student(0, name, age);
-        return restTemplate.postForObject(baseUrl + "/student", student, Student.class);
+        return restTemplate.postForObject(baseUrl + STUDENT_PATH, student, Student.class);
     }
 
     private Faculty createFaculty(String name, String color) {
         Faculty faculty = new Faculty(0, name, color);
-        return restTemplate.postForObject(baseUrl + "/faculty", faculty, Faculty.class);
+        return restTemplate.postForObject(baseUrl + FACULTY_PATH, faculty, Faculty.class);
     }
 }
