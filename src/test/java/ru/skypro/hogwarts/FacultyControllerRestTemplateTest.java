@@ -3,99 +3,119 @@ package ru.skypro.hogwarts;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.boot.test.context.SpringBootTest.WebEnvironment;
 import org.springframework.boot.test.web.client.TestRestTemplate;
 import org.springframework.boot.test.web.server.LocalServerPort;
 import org.springframework.http.*;
-import ru.skypro.hogwarts.controller.FacultyController;
+import org.springframework.test.context.ActiveProfiles;
 import ru.skypro.hogwarts.entities.Faculty;
 import ru.skypro.hogwarts.entities.Student;
+import ru.skypro.hogwarts.repositories.FacultyRepository;
+import ru.skypro.hogwarts.repositories.StudentRepository;
 
-import java.util.Objects;
+import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-@SpringBootTest(webEnvironment = WebEnvironment.RANDOM_PORT)
+@ActiveProfiles("test")
+@SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 public class FacultyControllerRestTemplateTest {
+
+    private static final String BASE_NAME = "Hufflepuff";
+    private static final String BASE_COLOUR = "Yellow";
 
     @LocalServerPort
     private int port;
 
     @Autowired
-    private FacultyController facultyController;
+    private TestRestTemplate restTemplate;
 
     @Autowired
-    private TestRestTemplate restTemplate;
+    private FacultyRepository facultyRepository;
+
+    @Autowired
+    private StudentRepository studentRepository;
 
     private String getBaseUrl() {
         return "http://localhost:" + port;
     }
 
     @Test
-    void contextLoads() {
-        assertThat(facultyController).isNotNull();
+    void testCreateFaculty() {
+        Faculty faculty = new Faculty();
+        faculty.setName(BASE_NAME);
+        faculty.setColour(BASE_COLOUR);
+
+        ResponseEntity<Faculty> response = restTemplate.postForEntity(getBaseUrl() + "/faculty", faculty, Faculty.class);
+
+        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
+        assertThat(response.getBody()).isNotNull();
+        assertThat(response.getBody().getName()).isEqualTo(BASE_NAME);
     }
 
     @Test
-    void testCreateAndGetFaculty() {
-        Faculty faculty = new Faculty(0, "Hufflepuff", "Yellow");
-        ResponseEntity<Faculty> postResponse = restTemplate.postForEntity(getBaseUrl() + "/faculty", faculty, Faculty.class);
-        assertThat(postResponse.getStatusCode()).isEqualTo(HttpStatus.OK);
+    void testGetFacultyById() {
+        Faculty faculty = facultyRepository.save(new Faculty(0, BASE_NAME, BASE_COLOUR));
 
-        Faculty created = postResponse.getBody();
-        assertThat(created).isNotNull();
-        assertThat(created.getName()).isEqualTo("Hufflepuff");
+        ResponseEntity<Faculty> response = restTemplate.getForEntity(getBaseUrl() + "/faculty/" + faculty.getId(), Faculty.class);
 
-        ResponseEntity<Faculty> getResponse = restTemplate.getForEntity(getBaseUrl() + "/faculty/" + created.getId(), Faculty.class);
-        assertThat(getResponse.getStatusCode()).isEqualTo(HttpStatus.OK);
-        assertThat(Objects.requireNonNull(getResponse.getBody()).getColour()).isEqualTo("Yellow");
+        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
+        assertThat(response.getBody()).isNotNull();
+        assertThat(response.getBody().getColour()).isEqualTo(BASE_COLOUR);
     }
 
     @Test
     void testEditFaculty() {
-        Faculty faculty = new Faculty(0, "Ravenclaw", "Blue");
-        faculty = restTemplate.postForObject(getBaseUrl() + "/faculty", faculty, Faculty.class);
-
+        Faculty faculty = facultyRepository.save(new Faculty(0, BASE_NAME, BASE_COLOUR));
         faculty.setColour("Silver");
+
         HttpEntity<Faculty> request = new HttpEntity<>(faculty);
         ResponseEntity<Faculty> response = restTemplate.exchange(getBaseUrl() + "/faculty/" + faculty.getId(), HttpMethod.PUT, request, Faculty.class);
 
         assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
-        assertThat(Objects.requireNonNull(response.getBody()).getColour()).isEqualTo("Silver");
+        assertThat(response.getBody()).isNotNull();
+        assertThat(response.getBody().getColour()).isEqualTo("Silver");
     }
 
     @Test
     void testDeleteFaculty() {
-        Faculty faculty = new Faculty(0, "Durmstrang", "Gray");
-        faculty = restTemplate.postForObject(getBaseUrl() + "/faculty", faculty, Faculty.class);
+        Faculty faculty = facultyRepository.save(new Faculty(0, BASE_NAME, BASE_COLOUR));
 
         restTemplate.delete(getBaseUrl() + "/faculty/" + faculty.getId());
 
         ResponseEntity<Faculty> response = restTemplate.getForEntity(getBaseUrl() + "/faculty/" + faculty.getId(), Faculty.class);
+
         assertThat(response.getStatusCode()).isEqualTo(HttpStatus.NOT_FOUND);
     }
 
     @Test
     void testFindByNameOrColourIgnoreCase() {
-        restTemplate.postForObject(getBaseUrl() + "/faculty", new Faculty(0, "Beauxbatons", "Silver"), Faculty.class);
-        restTemplate.postForObject(getBaseUrl() + "/faculty", new Faculty(0, "Silverstorm", "White"), Faculty.class);
+        facultyRepository.saveAll(List.of(
+                new Faculty(0, "SilverHouse", "Silver"),
+                new Faculty(0, "GoldHouse", "Gold")
+        ));
 
-        ResponseEntity<Faculty[]> response = restTemplate.getForEntity(getBaseUrl() + "/faculty?name=silver&colour=white", Faculty[].class);
+        ResponseEntity<Faculty[]> response = restTemplate.getForEntity(
+                getBaseUrl() + "/faculty?name=silver&colour=gold",
+                Faculty[].class
+        );
+
         assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
-        assertThat(Objects.requireNonNull(response.getBody()).length).isGreaterThanOrEqualTo(1);
+        assertThat(response.getBody()).isNotNull();
+        assertThat(response.getBody().length).isGreaterThanOrEqualTo(1);
     }
 
     @Test
     void testGetStudentsByFaculty() {
-        Faculty faculty = new Faculty(0, "TestHouse", "Blue");
-        faculty = restTemplate.postForObject(getBaseUrl() + "/faculty", faculty, Faculty.class);
-
+        Faculty faculty = facultyRepository.save(new Faculty(0, "BlueHouse", "Blue"));
         Student student = new Student(0, "TestStudent", 18);
         student.setFaculty(faculty);
-        student = restTemplate.postForObject(getBaseUrl() + "/student", student, Student.class);
+        studentRepository.save(student);
 
         ResponseEntity<Student[]> response = restTemplate.getForEntity(getBaseUrl() + "/faculty/" + faculty.getId() + "/students", Student[].class);
+
         assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
         assertThat(response.getBody()).isNotNull();
+        assertThat(response.getBody().length).isEqualTo(1);
+        assertThat(response.getBody()[0].getName()).isEqualTo("TestStudent");
     }
 }
