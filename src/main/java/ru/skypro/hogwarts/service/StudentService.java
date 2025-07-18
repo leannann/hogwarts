@@ -3,6 +3,7 @@ package ru.skypro.hogwarts.service;
 import ru.skypro.hogwarts.entities.Student;
 
 import java.util.Collection;
+import java.util.List;
 
 public interface StudentService {
 
@@ -15,5 +16,9 @@ public interface StudentService {
     void deleteStudent(long id);
 
     Collection<Student> findByAgeBetween(int min, int max);
+
+    long getStudentCount();
+    Double getAverageAge();
+    List<Student> getLastFiveStudents();
 
 }

@@ -8,6 +8,7 @@ import ru.skypro.hogwarts.entities.Student;
 import ru.skypro.hogwarts.service.StudentService;
 
 import java.util.Collection;
+import java.util.List;
 
 @RestController
 @RequestMapping("/student")
@@ -59,4 +60,21 @@ public class StudentController {
         studentService.deleteStudent(id);
         return ResponseEntity.ok().build();
     }
+
+    @GetMapping("/count")
+    public long getStudentCount() {
+        return studentService.getStudentCount();
+    }
+
+    @GetMapping("/average-age")
+    public Double getAverageAge() {
+        return studentService.getAverageAge();
+    }
+
+    @GetMapping("/last5")
+    public List<Student> getLastFiveStudents() {
+        return studentService.getLastFiveStudents();
+    }
+
+
 }
