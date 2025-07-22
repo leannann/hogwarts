@@ -7,6 +7,7 @@ import org.springframework.boot.test.web.client.TestRestTemplate;
 import org.springframework.boot.test.web.server.LocalServerPort;
 import org.springframework.http.*;
 import org.springframework.test.context.ActiveProfiles;
+import ru.skypro.hogwarts.controller.StudentController;
 import ru.skypro.hogwarts.entities.Faculty;
 import ru.skypro.hogwarts.entities.Student;
 
