@@ -7,6 +7,8 @@ import ru.skypro.hogwarts.entities.Faculty;
 import ru.skypro.hogwarts.repositories.FacultyRepository;
 
 import java.util.Collection;
+import java.util.Comparator;
+import java.util.Objects;
 
 @Service
 public class FacultyServiceImpl implements FacultyService {
@@ -51,5 +53,13 @@ public class FacultyServiceImpl implements FacultyService {
     public Collection<Faculty> findByNameOrColourIgnoreCase(String name, String colour) {
         logger.info("Was invoked method for search faculty by name or colour");
         return facultyRepository.findByNameOrColourIgnoreCase(name, colour);
+    }
+
+    public String getLongestFacultyName() {
+        return facultyRepository.findAll().stream()
+                .map(Faculty::getName)
+                .filter(Objects::nonNull)
+                .max(Comparator.comparingInt(String::length))
+                .orElse("No faculties found");
     }
 }

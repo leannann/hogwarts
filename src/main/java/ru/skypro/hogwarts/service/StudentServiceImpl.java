@@ -71,4 +71,21 @@ public class StudentServiceImpl implements StudentService {
         logger.info("Was invoked method for getting last 5 students");
         return studentRepository.findLast5Students();
     }
+
+    public List<String> getNamesStartingWithA() {
+        return studentRepository.findAll().stream()
+                .map(Student::getName)
+                .filter(name -> name != null && name.toUpperCase().startsWith("A"))
+                .map(String::toUpperCase)
+                .sorted()
+                .toList();
+    }
+
+    public double getAverageStudentAge() {
+        return studentRepository.findAll().stream()
+                .mapToInt(Student::getAge)
+                .average()
+                .orElse(0.0); // если список пуст — вернуть 0.0
+    }
+
 }
