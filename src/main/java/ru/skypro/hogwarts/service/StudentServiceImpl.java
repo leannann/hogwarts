@@ -85,7 +85,15 @@ public class StudentServiceImpl implements StudentService {
         return studentRepository.findAll().stream()
                 .mapToInt(Student::getAge)
                 .average()
-                .orElse(0.0); // если список пуст — вернуть 0.0
+                .orElse(0.0);
+    }
+
+    @Override
+    public List<Student> getFirstSixStudents() {
+        return studentRepository.findAll()
+                .stream()
+                .limit(6)
+                .toList();
     }
 
 }
