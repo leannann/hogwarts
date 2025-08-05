@@ -86,6 +86,62 @@ public class StudentController {
         return studentService.getAverageStudentAge();
     }
 
+    @GetMapping("/students/print-parallel")
+    public ResponseEntity<Void> printStudentsParallel() {
+        List<Student> students = studentService.getFirstSixStudents(); // или findAll().subList(...)
+
+        if (students.size() < 6) {
+            return ResponseEntity.badRequest().build();
+        }
+
+        System.out.println("Main thread: " + students.get(0).getName());
+        System.out.println("Main thread: " + students.get(1).getName());
+
+        Thread thread1 = new Thread(() -> {
+            System.out.println("Thread 1: " + students.get(2).getName());
+            System.out.println("Thread 1: " + students.get(3).getName());
+        });
+
+        Thread thread2 = new Thread(() -> {
+            System.out.println("Thread 2: " + students.get(4).getName());
+            System.out.println("Thread 2: " + students.get(5).getName());
+        });
+
+        thread1.start();
+        thread2.start();
+
+        return ResponseEntity.ok().build();
+    }
+
+    private synchronized void printStudentNames(String threadName, Student s1, Student s2) {
+        System.out.println(threadName + ": " + s1.getName());
+        System.out.println(threadName + ": " + s2.getName());
+    }
+
+    @GetMapping("/students/print-synchronized")
+    public ResponseEntity<Void> printStudentsSynchronized() {
+        List<Student> students = studentService.getFirstSixStudents();
+
+        if (students.size() < 6) {
+            return ResponseEntity.badRequest().build();
+        }
+
+        printStudentNames("Main thread", students.get(0), students.get(1));
+
+        Thread thread1 = new Thread(() -> {
+            printStudentNames("Thread 1", students.get(2), students.get(3));
+        });
+
+        Thread thread2 = new Thread(() -> {
+            printStudentNames("Thread 2", students.get(4), students.get(5));
+        });
+
+        thread1.start();
+        thread2.start();
+
+        return ResponseEntity.ok().build();
+    }
+
 
 
 
