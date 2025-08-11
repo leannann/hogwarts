@@ -88,12 +88,4 @@ public class StudentServiceImpl implements StudentService {
                 .orElse(0.0);
     }
 
-    @Override
-    public List<Student> getFirstSixStudents() {
-        return studentRepository.findAll()
-                .stream()
-                .limit(6)
-                .toList();
-    }
-
 }
