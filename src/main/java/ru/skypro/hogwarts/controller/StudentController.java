@@ -5,6 +5,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import ru.skypro.hogwarts.entities.Faculty;
 import ru.skypro.hogwarts.entities.Student;
+import ru.skypro.hogwarts.service.StudentPrintService;
 import ru.skypro.hogwarts.service.StudentService;
 
 import java.util.Collection;
@@ -15,9 +16,11 @@ import java.util.List;
 public class StudentController {
 
     private final StudentService studentService;
+    private final StudentPrintService studentPrintService;
 
-    public StudentController(StudentService studentService) {
+    public StudentController(StudentService studentService, StudentPrintService studentPrintService) {
         this.studentService = studentService;
+        this.studentPrintService = studentPrintService;
     }
 
     @GetMapping("/{id}")
@@ -86,7 +89,16 @@ public class StudentController {
         return studentService.getAverageStudentAge();
     }
 
+    @GetMapping("/print-parallel")
+    public ResponseEntity<Void> printStudentsParallel() {
+        studentPrintService.printParallel();
+        return ResponseEntity.ok().build();
+    }
 
-
+    @GetMapping("/print-synchronized")
+    public ResponseEntity<Void> printStudentsSynchronized() {
+        studentPrintService.printSynchronized();
+        return ResponseEntity.ok().build();
+    }
 
 }

@@ -85,7 +85,7 @@ public class StudentServiceImpl implements StudentService {
         return studentRepository.findAll().stream()
                 .mapToInt(Student::getAge)
                 .average()
-                .orElse(0.0); // если список пуст — вернуть 0.0
+                .orElse(0.0);
     }
 
 }
